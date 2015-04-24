@@ -1,4 +1,4 @@
-#id;Title;yearOfAward;director;mainActor;titleEnglish;yearOfProduction;country;duration;fsk;genre;startDate;
+#id;Title;yearOfAward;director;mainActor;titleEnglish;yearOfProduction;country;duration;fsk;genre;startDate;Oscars;
 0;Broadway Melody;1929;Harry Beaumont;Anita Page, Bessie Love;The Broadway Melody;1929;US;100;12;Musikfilm;01.02.1929;1
 1;Im Westen nichts Neues;1931;Lewis Milestone;Louis Wolheim, Lew Ayres;All Quiet on the Western Front;1930;US;136;12;Drama;04.12.1930;2
 2;Pioniere des wilden Westens ;1932;Wesley Ruggles;Richard Dix, Irene Dunne;Cimarron;1931;US;123;12;Drama, Western;09.02.1931;1
@@ -82,3 +82,4 @@
 80;Tödliches Kommando - The Hurt Locker;2010;Kathryn Bigelow;Jeremy Renner, Anthony Mackie;The Hurt Locker;2008;US;131;16;Drama, Thriller, Actionfilm;13.08.2009;1
 81;The King's Speech - Die Rede des Königs;2011;Tom Hooper;Colin Firth, Geoffrey Rush;The King's Speech;2010;AU/GB;118;0;Drama, Historienfilm;17.02.2011;1
 82;The Artist;2012;Michel Hazanavicius;Jean Dujardin, Bérénice Bejo;The Artist;2011;BE/FR;100;6;Drama, Komödie;26.01.2012;1
+83;James Bond;1993;Michael Bay;Jodie, James, Penny;James Bond;1998;CH;1293;18;Action;24.04.2015;3

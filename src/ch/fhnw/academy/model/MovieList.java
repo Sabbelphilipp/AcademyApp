@@ -35,6 +35,15 @@ public class MovieList implements Observable {
         return allMovies.get(index);
     }
 
+    public void addMovie(movie newMovie){
+        allMovies.add(newMovie);
+        notifyObserverAddedRow(allMovies.size() - 1);
+    }
+
+    public void removeMovie(){
+        allMovies.remove(this.selectedMovie);
+        notifyObserverRemovedRow(getSelectedIndex());
+    }
 
     // ----- Override the Methods from the Interface -----
     @Override
@@ -48,19 +57,22 @@ public class MovieList implements Observable {
     }
 
     // Notifies all Observers
-    // *WORKS*
     public void notifyObserver(){
         for(Observer observer:allObservers){
             observer.update(this);
         }
     }
 
-    public void notifyAdding(){
-
+    public void notifyObserverAddedRow(int index){
+        for (Observer observer: allObservers){
+            observer.addNewRow(index);
+        }
     }
 
-    public void notifyRemoving(){
-
+    public void notifyObserverRemovedRow(int index){
+        for (Observer observer:allObservers){
+            observer.removeRow(index);
+        }
     }
 
     // ----- Setting new Values -----
@@ -99,6 +111,11 @@ public class MovieList implements Observable {
         notifyObserver();
     }
 
+    public void setCountryOfSelectedMovie(String country){
+        this.selectedMovie.setCountry(country);
+        notifyObserver();
+    }
+
     // Methods without Observers
 
     public void setTitleEnglishOfSelectedMovie(String titleeng){
@@ -106,9 +123,6 @@ public class MovieList implements Observable {
     }
     public void setGenreOfSelecteMovie(String genre){
         this.selectedMovie.setGenre(genre);
-    }
-    public void setCountryOfSelectedMovie(String country){
-        this.selectedMovie.setCountry(country);
     }
     public void setFSKOfSelectedMovie(Integer FSK){ this.selectedMovie.setFsk(FSK);}
     public void setYearOfProductionOfSelectedMovie(int year){this.selectedMovie.setYearOfProduction(year);}
@@ -126,9 +140,10 @@ public class MovieList implements Observable {
     public void setSelectedMovie(movie selectedMovie){
         if(this.selectedMovie == selectedMovie){
             return ;
+        }else {
+            this.selectedMovie = selectedMovie;
+            notifyObserver();
         }
-        this.selectedMovie = selectedMovie;
-        notifyObserver();
     }
 
     public void setFirstEntry(movie firstEntry) {

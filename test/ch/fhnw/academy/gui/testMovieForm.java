@@ -1,22 +1,17 @@
 package ch.fhnw.academy.gui;
-import ch.fhnw.academy.businesslogic.movieLogic;
 import ch.fhnw.academy.dataprovider.movieDataProvider;
 import ch.fhnw.academy.model.MovieList;
 import ch.fhnw.academy.model.MovieTableModel;
 import ch.fhnw.academy.model.movie;
 import net.miginfocom.swing.MigLayout;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.io.IOException;
 import java.util.ArrayList;
 
 /**

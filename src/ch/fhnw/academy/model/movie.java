@@ -1,30 +1,36 @@
 package ch.fhnw.academy.model;
-
 import com.sun.javafx.binding.StringFormatter;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 /**
  * Created by Reto Giger on 23.02.2015.
+ * Movie containts all the attributes for the
  */
 public class movie {
-    private int id;
-    private  int year;
-    private String title;
-    private List<String>  director;
-    private List<String> mainActors;
-    private String titleEng;
-    private String genre; //Dropdownmenü?
-    private int fsk;
-    private int yearOfProduction;
-    private int duration;
-    private Date startDate;
-    private String country;
-    private int oscars;
 
-    private final SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
+    // ----- Constructor for new Movies ---------
+
+    public movie(){
+        System.out.println("Base Constructor used");
+        this.title = "";
+        this.titleEng = "";
+        this.genre = "";
+        this.country = "";
+        this.year = 0;
+        this.fsk = 0;
+        this.yearOfProduction = 0;
+        this.duration= 0;
+        this.startDate = new Date();
+        director = new ArrayList<>();
+        director.add("");
+        mainActors = new ArrayList<>();
+        mainActors.add("");
+        this.oscars = 0;
+
+    }
 
     // ----- Constructor for Jtable -----
     public movie(int year, String title, List<String> director, List<String> mainActors){
@@ -32,13 +38,6 @@ public class movie {
         this.title = title;
         this.director = director;
         this.mainActors = mainActors;
-    }
-
-    //-------------Constructor light-----
-    public movie(int id,String title,int year){
-        this.id = id;
-        this.year = year;
-        this.title = title;
     }
 
     //--------------Constructor------------------
@@ -59,34 +58,38 @@ public class movie {
         this.oscars = oscars;
     }
 
-    //------- To String Methode ------
+    //------- To String Methods ------
     @Override
     public String toString(){
         return "Der Film mit der ID "+ id + " und dem Titel "+ title + " aus dem Jahre " + year+"!";
     }
 
-    public String createCSVLine(){
-
-        return this.id+";"+this.title+";"+this.year+";"+this.director+";"+this.mainActors+";"+this.titleEng+";"+this.yearOfProduction+";"+this.country+";"+this.duration+";"+this.fsk+";"+this.genre+";"+formatter.format(this.startDate)+";"+this.oscars+"\r\n";
-    }
-
     public String getMainActorsAsString(){
         StringBuilder sb = new StringBuilder();
+        try{
         for(int x = 0; x<mainActors.size(); x++){
             sb.append(mainActors.get(x));
             sb.append(", ");
         }
         sb.delete(sb.length()-2,sb.length());
         return sb.toString();
+        }catch (NullPointerException e){
+            System.out.println("Null Pointer Exception");
+        }
+        return sb.toString();
     }
 
     public String getDirectorsAsString(){
         StringBuilder sb = new StringBuilder();
-        for(int x = 0; x<director.size(); x++){
-            sb.append(director.get(x));
-            sb.append(", ");
+        try{
+            for(int x = 0; x<director.size(); x++){
+                sb.append(director.get(x));
+                sb.append(", ");
+            }
+            sb.delete(sb.length()-2,sb.length());
+        }catch (NullPointerException e){
+            System.out.println("Null Pointer Exception");
         }
-        sb.delete(sb.length()-2,sb.length());
         return sb.toString();
     }
 
@@ -94,8 +97,14 @@ public class movie {
         return formatter.format(this.startDate);
     }
 
-    //-------------Getter & Setter--------------
+    // ------ Method to create the CSV Line written to the file ------
 
+    public String createCSVLine(){
+        return this.id+";"+this.title+";"+this.year+";"+getDirectorsAsString()+";"+getMainActorsAsString()+";"+this.titleEng+";"+this.yearOfProduction+";"+this.country+";"+this.duration+";"+this.fsk+";"+this.genre+";"+formatter.format(this.startDate)+";"+this.oscars+"\r\n";
+    }
+
+
+    //-------------Getter & Setter--------------
 
     public String getCountry() {
         return country;
@@ -200,4 +209,21 @@ public class movie {
     public void setStartDate(Date startDate) {
         this.startDate = startDate;
     }
+
+    //**************ATTRIBUTES********
+
+    private int id;
+    private int year;
+    private String title;
+    private List<String>  director;
+    private List<String> mainActors;
+    private String titleEng;
+    private String genre; //Dropdownmenü?
+    private int fsk;
+    private int yearOfProduction;
+    private int duration;
+    private Date startDate;
+    private String country;
+    private int oscars;
+    private final SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
 }

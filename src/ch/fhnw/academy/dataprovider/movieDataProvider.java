@@ -26,14 +26,18 @@ public class movieDataProvider{
                 List<String> authors = new ArrayList<String>();
                 List<String> mainActors = new ArrayList<String>();
                 String[] tmp = items[3].split(", ");
-                for (String add : tmp) {
-                        authors.add(add);
+                /*for (String s : tmp){
+                    System.out.println(s);
+                }*/
+                for (String s : tmp) {
+                        authors.add(s.toString());
                     }
                 tmp = items[4].split(", ");
                 for (String add : tmp) {
                     mainActors.add(add);
                 }
                 try{
+                    // TO DO: Die String werden richtig in der Liste authors gespeichert. Beim Erstellen des Movie werden die [ ] gesetzt
                     movie m1 = new movie(Integer.parseInt(items[0]),items[1],Integer.parseInt(items[2]),authors, mainActors,items[5],Integer.parseInt(items[6]),items[7],Integer.parseInt(items[8]),Integer.parseInt(items[9]),items[10], formatter.parse(items[11]), Integer.parseInt(items[12]));
                     allMovies.add(m1);
                 }catch (ParseException e){
@@ -52,7 +56,7 @@ public class movieDataProvider{
     public void writeData(ArrayList<movie> al){
         FileWriter fw = null;
         try{
-            fw = new FileWriter(new File("testWrite.csv"));
+            fw = new FileWriter(path);
             fw.append(FILE_HEADER.toString());
             fw.append(NEW_LINE_SEPERATOR);
             for(int x = 0; x<al.size(); x++){
