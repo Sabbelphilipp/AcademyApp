@@ -2,6 +2,7 @@ package ch.fhnw.academy.gui;
 import ch.fhnw.academy.businesslogic.movieController;
 import ch.fhnw.academy.dataprovider.movieDataProvider;
 import ch.fhnw.academy.model.*;
+import de.javasoft.plaf.synthetica.SyntheticaAluOxideLookAndFeel;
 import net.miginfocom.swing.MigLayout;
 
 import javax.imageio.ImageIO;
@@ -9,32 +10,33 @@ import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.*;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 
 /**
  * Created by Reto Giger on 24.02.2015.
  */
 public class movieForm extends JFrame {
     public movieForm(){
-       /* try {
+        //********LOOK AND FEEL**************
+        try {
             UIManager.setLookAndFeel(new SyntheticaAluOxideLookAndFeel());
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         } catch (ParseException e) {
             e.printStackTrace();
-        }*/
+        }
 
         initializeComponent();
+        layoutComponents();
         addingActionListeners();
         addObservers();
         addEvents();
@@ -43,7 +45,7 @@ public class movieForm extends JFrame {
     // Initilisieren der GUI Elemente
     public void initializeComponent(){
         this.setLayout(new BorderLayout());
-        this.setTitle("Academy");
+        this.setTitle("AcademyApp");
 
         // ----- Logics -----
         movieList = new MovieList();
@@ -76,24 +78,173 @@ public class movieForm extends JFrame {
         lblDirector = new JLabel("");
         lblTitle = new JLabel("");
         lblYear = new JLabel("");
+    }
 
-
+    public void layoutComponents(){
         // ----- Top Panel -----
         this.add(layoutTopPanel(),BorderLayout.NORTH);
 
+        // ----- Center Panel -----
+        Component leftpanel = layoutLeftPanel();
+        Component rightpanel = layoutRightPanel();
+        rightpanel.setSize(new Dimension(300, 600));
 
-        // ----- Left Panel -----
-        this.add(leftPanel, BorderLayout.CENTER);
-        leftPanel.setPreferredSize(new Dimension(500,600));
-        leftPanel.add(layoutLeftPanel());
-        leftPanel.setBorder(new CompoundBorder(new EmptyBorder(2, 2, 2, 2), new BevelBorder(BevelBorder.LOWERED)));
+        // ----- JSplint Pane -----
+        jSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,leftpanel,rightpanel);
+        jSplitPane.setResizeWeight(1.0);
+        this.add(jSplitPane, BorderLayout.CENTER);
 
-        // ----- Right Panel -----
-        this.add(layoutRightPanel(), BorderLayout.EAST);
-        rightPanel.setSize(new Dimension(300,600));
-
+        //rowSorter = new TableRowSorter<>(jt.getModel());
     }
 
+    // ----- Layout left Panel
+    public Component layoutLeftPanel()
+    {
+        TableModel model = new MovieTableModel(movieList);
+        jt = new JTable(model);
+        jt.setRowSorter(new TableRowSorter<TableModel>(jt.getModel()));
+        styleTable();
+        return new JScrollPane(jt);
+    }
+    // ------ Layout top Panel -----
+    private JPanel layoutTopPanel(){
+        topPanel.setLayout(new BoxLayout(topPanel,BoxLayout.LINE_AXIS));
+        topPanel.setBorder(new CompoundBorder(new EmptyBorder(2, 2, 2, 2), new BevelBorder(BevelBorder.LOWERED)));
+
+        buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
+        // ----- SAVE Button -----
+        saveButton = new JButton();
+        saveButton.setIcon(buildImage(new File("lib/icons/Save.png"),25,25));
+        saveButton.setPressedIcon(buildImage(new File("lib/icons/Save_Pressed.png"),25,25));
+        //saveButton.setToolTipText("DAS IST EIN TEST");
+
+        // ----- ADD Button -----
+        addButton = new JButton();
+        addButton.setIcon(buildImage(new File("lib/icons/Plus.png"),25,25));
+        addButton.setPressedIcon(buildImage(new File("lib/icons/Plus_Pressed.png"),25,25));
+
+        // ----- REMOVE Button -----
+        removeButton = new JButton();
+        removeButton.setIcon(buildImage(new File("lib/icons/Minus.png"),25,25));
+        removeButton.setPressedIcon(buildImage(new File("lib/icons/Minus_Pressed.png"),25,25));
+
+        // ----- UNDO Button -----
+        undoButton = new JButton();
+        undoButton.setIcon(buildImage(new File("lib/icons/Undo.png"),25,25));
+        undoButton.setPressedIcon(buildImage(new File("lib/icons/Undo_Pressed.png"),25,25));
+        undoButton.setEnabled(false);
+
+        // ----- REDO Button -----
+        redoButton = new JButton();
+        redoButton.setIcon(buildImage(new File("lib/icons/Redo.png"),25,25));
+        redoButton.setPressedIcon(buildImage(new File("lib/icons/Redo_Pressed.png"),25,25));
+        redoButton.setEnabled(false);
+
+        // ----- Search Text Field -----
+        searchTextField = new JTextField("Suchen...", TEXT_FIELD_DIMENSION);
+        searchTextField.setMaximumSize(new Dimension(TEXT_FIELD_DIMENSION,TEXT_FIELD_DIMENSION));
+
+        //------- Tooltips-------
+        saveButton.setToolTipText("Speichern");
+        addButton.setToolTipText("Film hinzufügen");
+        removeButton.setToolTipText("Film entfernen");
+        undoButton.setToolTipText("Rückgängig");
+        redoButton.setToolTipText("Wiederherstellen");
+        searchTextField.setToolTipText("Film suchen");
+
+        //-------TOOLBAR---------
+        toolBar = new JToolBar();
+        toolBar.setFloatable(false);
+        toolBar.add(saveButton);
+        toolBar.addSeparator();
+        toolBar.add(addButton);
+        toolBar.add(removeButton);
+        toolBar.addSeparator();
+        toolBar.add(undoButton);
+        toolBar.add(redoButton);
+        buttonPanel.add(toolBar);
+
+        //-----Adding Elements to Panels -------
+        searchPanel.add(searchTextField);
+        topPanel.add(buttonPanel);
+        topPanel.add(searchPanel);
+
+        return topPanel;
+    }
+
+    //------- Layout right Panel --------
+    private JPanel layoutRightPanel(){
+       rightPanel.setLayout(new MigLayout("wrap 1", "[grow,fill]", "[grow,fill]"));
+       //rightPanel.setLayout(new GridLayout(2,1));
+       rightPanel.add(layoutUpperRightPanel());
+       rightPanel.add(layoutLowerRightPanel());
+       return rightPanel;
+   }
+
+    private JPanel layoutLowerRightPanel(){
+        //Specify min, pref and max size when initialize the Layout -> min:preferred:max" (E.g. "10:20:40").
+        underRightPanel.setLayout(new MigLayout("wrap 4", "[][grow,fill]10[grow,fill]", ""));
+        underRightPanel.setPreferredSize(RightPanelDimension);
+        underRightPanel.setMaximumSize(RightPanelDimension);
+        underRightPanel.add(new JLabel("Jahr:"));
+        underRightPanel.add(jtfYear, "wrap");
+        underRightPanel.add(new JLabel("Titel:"));
+        underRightPanel.add(jtfTitle, "span 3, ");
+        underRightPanel.add(new JLabel("Regisseur:"));
+        underRightPanel.add(jtfDirector, "span 3");
+        underRightPanel.add(new JLabel("Hauptdarsteller:"));
+        underRightPanel.add(jtfMainActor, "span 3");
+        underRightPanel.add(new JLabel("Title(eng):"));
+        underRightPanel.add(jtfTitleInEnglish, "span 3");
+        underRightPanel.add(new JLabel("Genre:"));
+        underRightPanel.add(jtfGenre);
+        underRightPanel.add(new JLabel("Produktionsjahr:"));
+        underRightPanel.add(jtfYearOfProduction);
+        underRightPanel.add(new JLabel("Land:"));
+        underRightPanel.add(jtfCountry);
+        underRightPanel.add(new JLabel("Spieldauer:"));
+        underRightPanel.add(jtfDuration);
+        underRightPanel.add(new JLabel("FSK ab:"));
+        underRightPanel.add(jtfFsk);
+        underRightPanel.add(new JLabel("Erscheinungsdatum:"));
+        underRightPanel.add(jtfStartDate);
+        underRightPanel.add(new JLabel("Oscars insgesamt:"));
+        underRightPanel.add(spinnerOscars);
+
+        return underRightPanel;
+    }
+
+    private JPanel layoutUpperRightPanel(){
+        //*************** MIG LAYOUT **************
+        //
+        upperRightPanel.setLayout(new MigLayout("wrap 5", "[10:30:35][grow, fill][][][160:160:160]",""));
+        upperRightPanel.setPreferredSize(RightPanelDimension);
+        upperRightPanel.setMaximumSize(RightPanelDimension);
+        upperRightPanel.setBorder(new CompoundBorder(new EmptyBorder(2, 2, 2, 2), new BevelBorder(BevelBorder.LOWERED)));
+        // Load default Image and Flag
+        lblImage.setIcon(buildImage(new File("lib/poster/no_poster.gif"),160,230));
+        lblCountry.setIcon(setFlag("us"));
+        playButton = new JButton("Trailer abspielen");
+        playButton.setIcon(buildImage(new File("lib/icons/playIonic.png"),25,25));
+        playButton.setPressedIcon(buildImage(new File("lib/icons/playIonicpressed.png"), 25, 25));
+
+        upperRightPanel.add(lblYear, "span 3");
+        upperRightPanel.add(lblCountry);
+        upperRightPanel.add(lblImage, "span 1 6");
+        upperRightPanel.add(lblTitle, "span 4");
+        upperRightPanel.add(new JLabel("Von:"));
+        upperRightPanel.add(lblDirector, "span 3");
+        upperRightPanel.add(new JLabel("Mit:"));
+        upperRightPanel.add(lblMainActor, "span 3");
+        upperRightPanel.add(panelOscars, "span 4");
+        upperRightPanel.add(playButton, "span 4");
+
+        return upperRightPanel;
+    }
+
+    //**************EVENT HANDLING *************
     public void addingActionListeners(){
         saveButton.addActionListener(new ActionListener() {
             @Override
@@ -181,6 +332,16 @@ public class movieForm extends JFrame {
                 }
             }
         });
+        //To do: Listener um die Tabelle editierbar zu machen
+        /*jt.getModel().addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                TableModel test = (TableModel) e.getSource();
+                System.out.println(test.getValueAt(e.getFirstRow(), e.getColumn()));
+                int x = e.getColumn();
+                System.out.println(x);
+            }
+        });*/
         {
             jtfTitle.addKeyListener(new KeyAdapter() {
                 @Override
@@ -322,142 +483,7 @@ public class movieForm extends JFrame {
         });
     }
 
-    // ----- Layout left Panel
-    public Component layoutLeftPanel()
-    {
-        TableModel model = new MovieTableModel(movieList);
-        jt = new JTable(model);
-        styleTable();
-        return new JScrollPane(jt);
-    }
-    // ------ Layout top Panel -----
-    private JPanel layoutTopPanel(){
-        topPanel.setLayout(new BoxLayout(topPanel,BoxLayout.LINE_AXIS));
-        topPanel.setBorder(new CompoundBorder(new EmptyBorder(2, 2, 2, 2), new BevelBorder(BevelBorder.LOWERED)));
-
-        buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-
-        // ----- SAVE Button -----
-        saveButton = new JButton();
-        saveButton.setIcon(buildImage(new File("lib/icons/Save.png"),25,25));
-        saveButton.setPressedIcon(buildImage(new File("lib/icons/Save_Pressed.png"),25,25));
-        //saveButton.setToolTipText("DAS IST EIN TEST");
-
-        // ----- ADD Button -----
-        addButton = new JButton();
-        addButton.setIcon(buildImage(new File("lib/icons/Plus.png"),25,25));
-        addButton.setPressedIcon(buildImage(new File("lib/icons/Plus_Pressed.png"),25,25));
-
-        // ----- REMOVE Button -----
-        removeButton = new JButton();
-        removeButton.setIcon(buildImage(new File("lib/icons/Minus.png"),25,25));
-        removeButton.setPressedIcon(buildImage(new File("lib/icons/Minus_Pressed.png"),25,25));
-
-        // ----- UNDO Button -----
-        undoButton = new JButton();
-        undoButton.setIcon(buildImage(new File("lib/icons/Undo.png"),25,25));
-        undoButton.setPressedIcon(buildImage(new File("lib/icons/Undo_Pressed.png"),25,25));
-
-        // ----- REDO Button -----
-        redoButton = new JButton();
-        redoButton.setIcon(buildImage(new File("lib/icons/Redo.png"),25,25));
-        redoButton.setPressedIcon(buildImage(new File("lib/icons/Redo_Pressed.png"),25,25));
-
-        // ----- Search Text Field -----
-        searchTextField = new JTextField("Suchen...", TEXT_FIELD_DIMENSION);
-
-        toolBar = new JToolBar();
-        toolBar.setFloatable(false);
-        toolBar.add(saveButton);
-        toolBar.addSeparator();
-        toolBar.add(addButton);
-        toolBar.add(removeButton);
-        toolBar.addSeparator();
-        toolBar.add(undoButton);
-        toolBar.add(redoButton);
-        buttonPanel.add(toolBar);
-
-        searchPanel.add(searchTextField);
-
-        topPanel.add(buttonPanel);
-        topPanel.add(searchPanel);
-
-        return topPanel;
-    }
-
-    //------- Layout right Panel --------
-    private JPanel layoutRightPanel(){
-       rightPanel.setLayout(new MigLayout("wrap 1", "[grow,fill]", "[grow,fill]"));
-       //rightPanel.setLayout(new GridLayout(2,1));
-       rightPanel.add(layoutUpperRightPanel());
-       rightPanel.add(layoutLowerRightPanel());
-       return rightPanel;
-   }
-
-    private JPanel layoutLowerRightPanel(){
-        //Specify min, pref and max size when initialize the Layout -> min:preferred:max" (E.g. "10:20:40").
-        underRightPanel.setLayout(new MigLayout("wrap 4", "[][grow,fill]10[grow,fill]", ""));
-        underRightPanel.setPreferredSize(RightPanelDimension);
-        underRightPanel.setMaximumSize(RightPanelDimension);
-        underRightPanel.add(new JLabel("Jahr:"));
-        underRightPanel.add(jtfYear, "wrap");
-        underRightPanel.add(new JLabel("Titel:"));
-        underRightPanel.add(jtfTitle, "span 3, ");
-        underRightPanel.add(new JLabel("Regisseur:"));
-        underRightPanel.add(jtfDirector, "span 3");
-        underRightPanel.add(new JLabel("Hauptdarsteller:"));
-        underRightPanel.add(jtfMainActor, "span 3");
-        underRightPanel.add(new JLabel("Title(eng):"));
-        underRightPanel.add(jtfTitleInEnglish, "span 3");
-        underRightPanel.add(new JLabel("Genre:"));
-        underRightPanel.add(jtfGenre);
-        underRightPanel.add(new JLabel("Produktionsjahr:"));
-        underRightPanel.add(jtfYearOfProduction);
-        underRightPanel.add(new JLabel("Land:"));
-        underRightPanel.add(jtfCountry);
-        underRightPanel.add(new JLabel("Spieldauer:"));
-        underRightPanel.add(jtfDuration);
-        underRightPanel.add(new JLabel("FSK ab:"));
-        underRightPanel.add(jtfFsk);
-        underRightPanel.add(new JLabel("Erscheinungsdatum:"));
-        underRightPanel.add(jtfStartDate);
-        underRightPanel.add(new JLabel("Oscars insgesamt:"));
-        underRightPanel.add(spinnerOscars);
-
-        return underRightPanel;
-    }
-
-    private JPanel layoutUpperRightPanel(){
-        //*************** MIG LAYOUT **************
-        //
-        upperRightPanel.setLayout(new MigLayout("wrap 5", "[10:30:35][grow, fill][][][160:160:160]",""));
-        upperRightPanel.setPreferredSize(RightPanelDimension);
-        upperRightPanel.setMaximumSize(RightPanelDimension);
-        upperRightPanel.setBorder(new CompoundBorder(new EmptyBorder(2, 2, 2, 2), new BevelBorder(BevelBorder.LOWERED)));
-        // Load default Image and Flag
-        lblImage.setIcon(buildImage(new File("lib/poster/no_poster.gif"),160,230));
-        lblCountry.setIcon(setFlag("us"));
-        playButton = new JButton("Trailer abspielen");
-        playButton.setIcon(buildImage(new File("lib/icons/playIonic.png"),25,25));
-        playButton.setPressedIcon(buildImage(new File("lib/icons/playIonicpressed.png"), 25, 25));
-
-        upperRightPanel.add(lblYear, "span 3");
-        upperRightPanel.add(lblCountry);
-        upperRightPanel.add(lblImage, "span 1 6");
-        upperRightPanel.add(lblTitle, "span 4");
-        upperRightPanel.add(new JLabel("Von:"));
-        upperRightPanel.add(lblDirector, "span 3");
-        upperRightPanel.add(new JLabel("Mit:"));
-        upperRightPanel.add(lblMainActor, "span 3");
-        upperRightPanel.add(panelOscars, "span 4");
-        upperRightPanel.add(playButton, "span 4");
-
-        return upperRightPanel;
-    }
-
     // ********* Methods to create Images on the GUI *************
-
     public JPanel setOscars(int value){
         JPanel Oscars = new JPanel();
         for (int x = 0; x<value; x++){
@@ -531,6 +557,7 @@ public class movieForm extends JFrame {
     private MovieList movieList;
 
     private JSplitPane jSplitPane;
+    private TableRowSorter<TableModel> rowSorter;
 
     private JPanel rightPanel;
     private JPanel underRightPanel;

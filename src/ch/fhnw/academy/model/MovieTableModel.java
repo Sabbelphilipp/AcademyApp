@@ -46,6 +46,12 @@ public class MovieTableModel extends AbstractTableModel {
         return 4;
     }
 
+    // Make the JTable Editable
+    @Override
+    public boolean isCellEditable(int col, int row){
+        return true;
+    }
+
     public String getColumnName(int col){
         return columns[col];
     }
