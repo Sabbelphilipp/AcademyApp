@@ -2,8 +2,11 @@ package ch.fhnw.academy.gui;
 import ch.fhnw.academy.businesslogic.movieController;
 import ch.fhnw.academy.dataprovider.movieDataProvider;
 import ch.fhnw.academy.model.*;
+import ch.fhnw.academy.model.Observable;
+import ch.fhnw.academy.model.Observer;
 import de.javasoft.plaf.synthetica.SyntheticaAluOxideLookAndFeel;
 import net.miginfocom.swing.MigLayout;
+import sun.applet.Main;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -20,6 +23,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.*;
+import java.util.List;
 
 /**
  * Created by Reto Giger on 24.02.2015.
@@ -57,6 +62,7 @@ public class movieForm extends JFrame {
         upperRightPanel = new JPanel();
         underRightPanel = new JPanel();
         topPanel = new JPanel();
+        panelCountry = new JPanel();
 
         //----- Textfield & Labels -----
         jtfTitle = new JTextField("");
@@ -66,12 +72,11 @@ public class movieForm extends JFrame {
         jtfGenre = new JTextField("");
         jtfCountry = new JTextField("");
         jtfFsk = new JTextField("");
-        spinnerOscars = new JSpinner();
+        spinnerOscars = new JSpinner(new SpinnerNumberModel(0, 0, 9, 1));
         jtfYearOfProduction = new JTextField("");
         jtfYear = new JTextField("");
         jtfDuration = new JTextField("");
         jtfStartDate = new JTextField("");
-        lblCountry = new JLabel();
         lblImage = new JLabel();
         lblMainActor = new JLabel("");
         panelOscars = new JPanel();
@@ -93,8 +98,7 @@ public class movieForm extends JFrame {
         jSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,leftpanel,rightpanel);
         jSplitPane.setResizeWeight(1.0);
         this.add(jSplitPane, BorderLayout.CENTER);
-
-        //rowSorter = new TableRowSorter<>(jt.getModel());
+        styleTable();
     }
 
     // ----- Layout left Panel
@@ -103,22 +107,15 @@ public class movieForm extends JFrame {
         TableModel model = new MovieTableModel(movieList);
         jt = new JTable(model);
         jt.setRowSorter(new TableRowSorter<TableModel>(jt.getModel()));
-        styleTable();
+
         return new JScrollPane(jt);
     }
     // ------ Layout top Panel -----
-    private JPanel layoutTopPanel(){
-        topPanel.setLayout(new BoxLayout(topPanel,BoxLayout.LINE_AXIS));
-        topPanel.setBorder(new CompoundBorder(new EmptyBorder(2, 2, 2, 2), new BevelBorder(BevelBorder.LOWERED)));
-
-        buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-
+    private JToolBar layoutTopPanel(){
         // ----- SAVE Button -----
         saveButton = new JButton();
         saveButton.setIcon(buildImage(new File("lib/icons/Save.png"),25,25));
         saveButton.setPressedIcon(buildImage(new File("lib/icons/Save_Pressed.png"),25,25));
-        //saveButton.setToolTipText("DAS IST EIN TEST");
 
         // ----- ADD Button -----
         addButton = new JButton();
@@ -164,14 +161,11 @@ public class movieForm extends JFrame {
         toolBar.addSeparator();
         toolBar.add(undoButton);
         toolBar.add(redoButton);
-        buttonPanel.add(toolBar);
-
-        //-----Adding Elements to Panels -------
-        searchPanel.add(searchTextField);
-        topPanel.add(buttonPanel);
-        topPanel.add(searchPanel);
-
-        return topPanel;
+        toolBar.addSeparator();
+        toolBar.add(Box.createHorizontalGlue());
+        toolBar.add(searchTextField);
+        toolBar.add(Box.createHorizontalStrut(15));
+        return toolBar;
     }
 
     //------- Layout right Panel --------
@@ -218,20 +212,27 @@ public class movieForm extends JFrame {
 
     private JPanel layoutUpperRightPanel(){
         //*************** MIG LAYOUT **************
-        //
         upperRightPanel.setLayout(new MigLayout("wrap 5", "[10:30:35][grow, fill][][][160:160:160]",""));
         upperRightPanel.setPreferredSize(RightPanelDimension);
         upperRightPanel.setMaximumSize(RightPanelDimension);
         upperRightPanel.setBorder(new CompoundBorder(new EmptyBorder(2, 2, 2, 2), new BevelBorder(BevelBorder.LOWERED)));
         // Load default Image and Flag
         lblImage.setIcon(buildImage(new File("lib/poster/no_poster.gif"),160,230));
-        lblCountry.setIcon(setFlag("us"));
+        panelCountry.add(setFlag("us"));
+
+        //------Set Fonts-----
+        lblYear.setFont(MAIN_FONT);
+        lblTitle.setFont(TITLE_FONT);
+        lblDirector.setFont(MAIN_FONT);
+        lblMainActor.setFont(MAIN_FONT);
+
+        //Trailer Button
         playButton = new JButton("Trailer abspielen");
         playButton.setIcon(buildImage(new File("lib/icons/playIonic.png"),25,25));
         playButton.setPressedIcon(buildImage(new File("lib/icons/playIonicpressed.png"), 25, 25));
 
         upperRightPanel.add(lblYear, "span 3");
-        upperRightPanel.add(lblCountry);
+        upperRightPanel.add(panelCountry);
         upperRightPanel.add(lblImage, "span 1 6");
         upperRightPanel.add(lblTitle, "span 4");
         upperRightPanel.add(new JLabel("Von:"));
@@ -337,9 +338,9 @@ public class movieForm extends JFrame {
             @Override
             public void tableChanged(TableModelEvent e) {
                 TableModel test = (TableModel) e.getSource();
-                System.out.println(test.getValueAt(e.getFirstRow(), e.getColumn()));
-                int x = e.getColumn();
-                System.out.println(x);
+
+                System.out.println(e.getColumn()); // always returns -1!!!
+                System.out.println(e.getFirstRow());
             }
         });*/
         {
@@ -464,7 +465,10 @@ public class movieForm extends JFrame {
                     jtfTitleInEnglish.setText(m.getTitleEng());
                     jtfGenre.setText(m.getGenre());
                     jtfCountry.setText(m.getCountry());
-                    lblCountry.setIcon(setFlag(m.getCountry()));
+                    panelCountry.removeAll();
+                    panelCountry.add(setFlag(m.getCountry()));
+                    panelCountry.revalidate();
+                    panelCountry.repaint();
                     jtfFsk.setText(Integer.toString(m.getFsk()));
                     spinnerOscars.setValue((m.getOscars()));
                     jtfYearOfProduction.setText(Integer.toString(m.getYearOfProduction()));
@@ -507,21 +511,29 @@ public class movieForm extends JFrame {
     }
 
     // ----------- CREATES THE FLAG FOR THE COUNTRY-----------------
-    public ImageIcon setFlag(String countryCode){
+    public JPanel setFlag(String countryCode){
         final int height = 16;
         final int width = 16;
-        ImageIcon finalIcon = null;
-        StringBuilder sb = new StringBuilder();
-        sb.append("lib/flags/16/");
-        sb.append(countryCode);
-        sb.append(".png");
-        File f = new File(sb.toString());
-        if (f.exists()) {
-            finalIcon = buildImage(f, height, width);
-        } else {
-            System.out.println("FLAG NOT FOUND");
+        JPanel Flags = new JPanel();
+
+        String[] tmp = countryCode.split("/");
+        for (String s : tmp){
+            ImageIcon finalIcon = null;
+            StringBuilder sb = new StringBuilder();
+            sb.append("lib/flags/16/");
+            sb.append(s);
+            sb.append(".png");
+            File f = new File(sb.toString());
+            if (f.exists()) {
+                finalIcon = buildImage(f, height, width);
+            } else {
+                System.out.println("FLAG NOT FOUND");
+            }
+            JLabel test = new JLabel();
+            test.setIcon(finalIcon);
+            Flags.add(test);
         }
-        return finalIcon;
+        return Flags;
     }
 
     public ImageIcon setImage(int index){
@@ -537,12 +549,13 @@ public class movieForm extends JFrame {
     public void styleTable(){
         TableColumn col0 = jt.getColumnModel().getColumn(0);
         col0.setPreferredWidth(10);
+        col0.setResizable(false);
         TableColumn col1 = jt.getColumnModel().getColumn(1);
-        col0.setMinWidth(60);
+        col0.setMinWidth(50);
         TableColumn col2 = jt.getColumnModel().getColumn(2);
         col0.setPreferredWidth(30);
         TableColumn col4 = jt.getColumnModel().getColumn(3);
-        col4.setPreferredWidth(20);
+        col4.setPreferredWidth(30);
 
     }
 
@@ -550,10 +563,8 @@ public class movieForm extends JFrame {
     private JFrame mainframe;
 
     private JTable jt;
-    //private movieDataProvider mdp;
     private movieController movieController;
     private JToolBar toolBar;
-    //ArrayList<movie> allMovies;
     private MovieList movieList;
 
     private JSplitPane jSplitPane;
@@ -567,6 +578,7 @@ public class movieForm extends JFrame {
     private JPanel buttonPanel;
     private JPanel searchPanel;
     private JPanel panelOscars;
+    private JPanel panelCountry;
 
     private JButton saveButton;
     private JButton addButton;
@@ -593,14 +605,13 @@ public class movieForm extends JFrame {
     private JLabel lblTitle;
     private JLabel lblDirector;
     private JLabel lblMainActor;
-    private JLabel lblCountry;
     private JLabel lblImage;
 
 
     private JTextField searchTextField;
 
-
-
+    private static final Font TITLE_FONT = new Font("Verdana", Font.BOLD, 20);
+    private final Font MAIN_FONT = new Font("Verdana", Font.BOLD, 14);
     private final int TEXT_FIELD_DIMENSION = 20;
     private final Dimension IMAGE_DIMENSION = new Dimension(150, 225);
     private Dimension RightPanelDimension = new Dimension(500,300);
