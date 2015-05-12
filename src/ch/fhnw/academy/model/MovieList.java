@@ -14,7 +14,8 @@ public class MovieList implements Observable {
 
     public MovieList(){
         this.allMovies = mdp.readData();
-        //undos and redos
+        //undos and tres redos
+        this.setSelectedMovie(allMovies.get(0));
     }
 
     //returns the state of the List
@@ -49,6 +50,7 @@ public class MovieList implements Observable {
     @Override
     public void addObserver(ch.fhnw.academy.model.Observer observer) {
         allObservers.add(observer);
+        observer.update(this);
     }
 
     @Override

@@ -23,22 +23,18 @@ public class movieDataProvider{
             while ( (strLine = reader.readLine()) != null )
             {
                 String[] items = strLine.split(";");
-                List<String> authors = new ArrayList<String>();
+                List<String> directors = new ArrayList<String>();
                 List<String> mainActors = new ArrayList<String>();
                 String[] tmp = items[3].split(", ");
-                /*for (String s : tmp){
-                    System.out.println(s);
-                }*/
                 for (String s : tmp) {
-                        authors.add(s.toString());
-                    }
+                    directors.add(s.toString());
+                }
                 tmp = items[4].split(", ");
                 for (String add : tmp) {
                     mainActors.add(add);
                 }
                 try{
-                    // TO DO: Die String werden richtig in der Liste authors gespeichert. Beim Erstellen des Movie werden die [ ] gesetzt
-                    movie m1 = new movie(Integer.parseInt(items[0]),items[1],Integer.parseInt(items[2]),authors, mainActors,items[5],Integer.parseInt(items[6]),items[7],Integer.parseInt(items[8]),Integer.parseInt(items[9]),items[10], formatter.parse(items[11]), Integer.parseInt(items[12]));
+                    movie m1 = new movie(Integer.parseInt(items[0]),items[1],Integer.parseInt(items[2]),directors, mainActors,items[5],Integer.parseInt(items[6]),items[7],Integer.parseInt(items[8]),Integer.parseInt(items[9]),items[10], formatter.parse(items[11]), Integer.parseInt(items[12]));
                     allMovies.add(m1);
                 }catch (ParseException e){
                     e.printStackTrace();

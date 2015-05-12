@@ -57,13 +57,20 @@ public class MovieTableModel extends AbstractTableModel {
     }
 
     @Override
+    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+        System.out.println("set value at " + rowIndex +" " +columnIndex  );
+        //switch column
+        //controller.setNewValue(aValue, rowIndex,)
+    }
+
+    @Override
     public Object getValueAt(int row, int column) {
         movie m = movieList.getAllMovies().get(row);
         switch (column){
             case 0: return m.getYear();
             case 1: return m.getTitle();
-            case 2: return m.getDirector();
-            case 3: return m.getMainActors();
+            case 2: return m.getDirectorsAsString();
+            case 3: return m.getMainActorsAsString();
             default: return null;
 //            case 0: return m.getId();
 //            case 1: return m.getTitle();

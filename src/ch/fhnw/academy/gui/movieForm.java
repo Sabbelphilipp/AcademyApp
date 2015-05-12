@@ -419,7 +419,13 @@ public class movieForm extends JFrame {
             jtfFsk.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyReleased(KeyEvent e) {
-                    movieController.setNewFSK(Integer.parseInt(jtfFsk.getText()));
+                    Integer year = Integer.parseInt(jtfFsk.getText());
+                    if(year>=0 && year <100){
+                        setInputValidation(jtfFsk,true);
+                        movieController.setNewFSK(year);
+                    } else {
+                        setInputValidation(jtfFsk, false);
+                    }
                 }
             });
         }
@@ -427,7 +433,13 @@ public class movieForm extends JFrame {
             jtfYearOfProduction.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyReleased(KeyEvent e) {
-                    movieController.setNewYearOfProduction(Integer.parseInt(jtfYearOfProduction.getText()));
+                    Integer year = Integer.parseInt(jtfYearOfProduction.getText());
+                    if (year>0 && year<=9999){
+                        setInputValidation(jtfYearOfProduction,true);
+                        movieController.setNewYearOfProduction(year);
+                    } else {
+                        setInputValidation(jtfYearOfProduction, false);
+                    }
                 }
             });
         }
@@ -435,7 +447,13 @@ public class movieForm extends JFrame {
             jtfDuration.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyReleased(KeyEvent e) {
-                    movieController.setNewDuration(Integer.parseInt(jtfDuration.getText()));
+                    String text = jtfDuration.getText();
+                    if (text.matches("[0-9]+") && text.length()>0){
+                        setInputValidation(jtfDuration,true);
+                        movieController.setNewDuration(Integer.parseInt(jtfDuration.getText()));
+                    } else {
+                        setInputValidation(jtfDuration,false);
+                    }
                 }
             });
         }
@@ -543,6 +561,11 @@ public class movieForm extends JFrame {
         } else{
             return buildImage(new File("lib/poster/no_poster.gif"),160,230 );
         }
+    }
+
+    //Sets the Color when the Input is valid or invalid
+    public void setInputValidation(Component jtf, boolean isValid){
+        jtf.setBackground(isValid ? Color.WHITE: Color.YELLOW);
     }
 
     //Method for styling the table by default values
