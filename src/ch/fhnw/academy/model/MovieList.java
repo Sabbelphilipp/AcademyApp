@@ -1,5 +1,7 @@
 package ch.fhnw.academy.model;
 
+import ch.fhnw.academy.businesslogic.RedoHandler;
+import ch.fhnw.academy.businesslogic.UndoHandler;
 import ch.fhnw.academy.dataprovider.movieDataProvider;
 
 import java.util.*;
@@ -13,6 +15,8 @@ import java.util.*;
 public class MovieList implements Observable {
 
     public MovieList(){
+        undoStack = new ArrayDeque<>();
+        redoStack = new ArrayDeque<>();
         this.allMovies = mdp.readData();
         //undos and tres redos
         this.setSelectedMovie(allMovies.get(0));
@@ -133,6 +137,34 @@ public class MovieList implements Observable {
     }
     public void setStartDateOfSelectedMovie(Date date){this.selectedMovie.setStartDate(date);}
 
+    //***********  UNDO REDO HANDLING **************
+
+    public void addUndo(UndoHandler undo) {
+        undoStack.push(undo);
+    }
+
+    public UndoHandler getLastUndo() {
+        return undoStack.pop();
+    }
+
+    public boolean hasUndo() {
+        return !undoStack.isEmpty();
+    }
+
+    public void addRedo(RedoHandler redo){
+        redoStack.push(redo);
+    }
+    public RedoHandler getLastRedo(){
+        return redoStack.pop();
+    }
+    public boolean hasRedo(){
+        return !redoStack.isEmpty();
+    }
+
+    public void clearRedo(){
+        redoStack.clear();
+    }
+
 
     // ----- Getter & Setter -----
     public movie getSelectedMovie(){
@@ -163,5 +195,6 @@ public class MovieList implements Observable {
     private movie selectedMovie;
     private movie firstEntry;
     movieDataProvider mdp = new movieDataProvider();
-
+    private final Deque<UndoHandler> undoStack;
+    private final Deque<RedoHandler> redoStack;
 }

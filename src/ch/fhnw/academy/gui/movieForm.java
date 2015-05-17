@@ -333,16 +333,6 @@ public class movieForm extends JFrame {
                 }
             }
         });
-        //To do: Listener um die Tabelle editierbar zu machen
-        /*jt.getModel().addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                TableModel test = (TableModel) e.getSource();
-
-                System.out.println(e.getColumn()); // always returns -1!!!
-                System.out.println(e.getFirstRow());
-            }
-        });*/
         {
             jtfTitle.addKeyListener(new KeyAdapter() {
                 @Override
@@ -355,7 +345,13 @@ public class movieForm extends JFrame {
             jtfYear.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyReleased(KeyEvent e) {
-                    movieController.setNewYear(Integer.parseInt(jtfYear.getText()));
+                    Integer value = Integer.parseInt(jtfYear.getText());
+                    if (value>3000 || value<1000){
+                        setInputValidation(jtfYear, false);
+                    }else {
+                        setInputValidation(jtfYear, true);
+                        movieController.setNewYear(value);
+                    }
                 }
             });
         }
@@ -379,7 +375,13 @@ public class movieForm extends JFrame {
             spinnerOscars.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
-                    movieController.setNewOscars(Integer.parseInt(spinnerOscars.getValue().toString()));
+                    Integer value = Integer.parseInt(spinnerOscars.getValue().toString());
+                    if(value>=0 && value< 10){
+                        setInputValidation(spinnerOscars,true);
+                        movieController.setNewOscars(value);
+                    } else{
+                        setInputValidation(spinnerOscars,false);
+                    }
                 }
             });
         }
@@ -387,7 +389,19 @@ public class movieForm extends JFrame {
             jtfCountry.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyReleased(KeyEvent e) {
-                    movieController.setNewCountry(jtfCountry.getText());
+                    String country = jtfCountry.getText();
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("lib/flags/16/");
+                    sb.append(country);
+                    sb.append(".png");
+                    File f = new File(sb.toString());
+                    if (f.exists()){
+                        setInputValidation(jtfCountry,true);
+                        movieController.setNewCountry(jtfCountry.getText());
+                    } else{
+                        setInputValidation(jtfCountry,false);
+                    }
+
                 }
             });
         }
@@ -395,6 +409,7 @@ public class movieForm extends JFrame {
             jtfStartDate.addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusLost(FocusEvent e) {
+                    // Input Validation
                     movieController.setNewStartDate(jtfStartDate.getText());
                 }
             });
@@ -492,6 +507,16 @@ public class movieForm extends JFrame {
                     jtfYearOfProduction.setText(Integer.toString(m.getYearOfProduction()));
                     jtfDuration.setText(Integer.toString(m.getDuration()));
                     jtfStartDate.setText(m.getStartDateAsString());
+                }
+                if (movieList.hasUndo()){
+                    undoButton.setEnabled(true);
+                }else {
+                    undoButton.setEnabled(false);
+                }
+                if (movieList.hasRedo()){
+                    redoButton.setEnabled(true);
+                }else {
+                    redoButton.setEnabled(false);
                 }
             }
             @Override
